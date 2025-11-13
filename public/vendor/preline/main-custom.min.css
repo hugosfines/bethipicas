@@ -1,0 +1,35 @@
+.selected.hs-selected\:block {
+    display: block;
+  }
+  
+  .selected.hs-selected\:bg-gray-100 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+  }
+  
+  .selected.hs-selected\:bg-stone-100 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(245 245 244 / var(--tw-bg-opacity));
+  }
+  
+  .selected.hs-selected\:font-semibold {
+    font-weight: 600;
+  }
+  
+  .selected .hs-selected\:block {
+    display: block;
+  }
+  
+  .selected .hs-selected\:bg-gray-100 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+  }
+  
+  .selected .hs-selected\:bg-stone-100 {
+    --tw-bg-opacity: 1;
+    background-color: rgb(245 245 244 / var(--tw-bg-opacity));
+  }
+  
+  .selected .hs-selected\:font-semibold {
+    font-weight: 600;
+  }
