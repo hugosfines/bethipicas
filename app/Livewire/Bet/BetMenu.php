@@ -120,9 +120,9 @@ class BetMenu extends Component
 
         $this->betTypeData = BetType::with('category')->find($this->betTypeId);
 
-        $this->racing = \App\Models\Racing::where('calendar_id', $this->calendarId)
+        $this->racing = $this->calendarId ? \App\Models\Racing::where('calendar_id', $this->calendarId)
             ->where('race', $this->raceCurrent)
-            ->first(); // where('status', 'open')
+            ->first() : null; // where('status', 'open')
 
         $this->betTypes = isset($this->racing->racing_bets) ? $this->racing->racing_bets
             ->sortBy('bet_type_id')
