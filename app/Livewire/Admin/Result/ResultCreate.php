@@ -50,13 +50,13 @@ class ResultCreate extends Component
             ->get();
 
         $this->calendars = $calendars;
-        $this->calendarId = $calendars->first()->id ?? '';
+        $this->calendarId = $calendars->first()->id ?? null;
         $this->loadCalendarData();
     }
 
     public function loadCalendarData($changeRaceCurrent = false)
     {
-        $this->calendarData = $this->calendarId ? Calendar::with('track')
+        $this->calendarData = !empty($this->calendarId) ? Calendar::with('track')
             ->where('is_active', true)
             ->find($this->calendarId) : null;
 
