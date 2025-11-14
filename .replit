@@ -41,3 +41,4 @@ build = ["bash", "-c", "composer install --optimize-autoloader --no-dev && npm c
 
 [nix]
 channel = "stable-25_05"
+packages = ["nano"]
