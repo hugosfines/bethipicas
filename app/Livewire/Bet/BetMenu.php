@@ -66,9 +66,9 @@ class BetMenu extends Component
 
     public function updatedCalendarId($value)
     {
-        $this->calendarData = Calendar::with('track')
+        $this->calendarData = $value ? Calendar::with('track')
             ->where('is_active', true)
-            ->find($value);
+            ->find($value) : null;
 
         $raceCalendar = $this->calendarData ? RaceCalendar::where('calendar_id', $this->calendarData->id)->latest()->first() : null;
         
