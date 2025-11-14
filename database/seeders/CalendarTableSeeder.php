@@ -17,6 +17,8 @@ class CalendarTableSeeder extends Seeder
      */
     public function run(): void
     {
+        //$tracks= Track::whereIn('id', [4,8,9,18,22,23,25,26,27,30,32,38,52,55,59,60,61,68,76,82,83,89,90,91,103,105,116,119])->get();
+
         for ($i=1; $i <= 6 ; $i++) { 
             $calendar = Calendar::create([
                 'track_id' => $i,
