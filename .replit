@@ -33,3 +33,8 @@ waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "rm -f public/hot && php artisan config:cache && php artisan route:cache && php artisan serve --host=0.0.0.0 --port=5000 --env=production"]
+build = ["bash", "-c", "composer install --optimize-autoloader --no-dev && npm ci && npm run build"]
