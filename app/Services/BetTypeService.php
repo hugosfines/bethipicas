@@ -6,10 +6,10 @@ class BetTypeService
 {
     public function getEjemplares($calendarId, $race)
     {
-        $racing = \App\Models\Racing::where('status', 'open')
+        $racing = $calendarId ? \App\Models\Racing::where('status', 'open')
             ->where('calendar_id', $calendarId)
             ->where('race', $race)
-            ->first();
+            ->first() : null;
 
         $ejemplares = isset($racing->racing_horses) ? $racing->racing_horses : [];
 

@@ -109,7 +109,7 @@ class BetMenu extends Component
             ->where('is_active', true)
             ->get();
 
-        $this->calendarId = isset($this->calendars[0]->id) ? $this->calendars[0]->id : '';
+        $this->calendarId = isset($this->calendars[0]->id) ? $this->calendars[0]->id : 'xn889';
         
         $this->updatedCalendarId($this->calendarId);
     }
