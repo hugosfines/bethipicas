@@ -1,4 +1,4 @@
-<!-- Modal de Configuración de Jornadas - SOLO ESTA PARTE -->
+<!-- Modal de Configuración de Jornadas -->
 <div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-40" x-data x-on:keydown.escape.window="$wire.showConfigModal = false">
     <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden" x-on:click.outside="$wire.showConfigModal = false">
         <!-- Header -->
