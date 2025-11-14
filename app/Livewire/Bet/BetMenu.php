@@ -103,7 +103,7 @@ class BetMenu extends Component
 
     public function loadData()
     {
-        $this->calendars = Calendar::orderBy('track_id', 'asc')
+        $this->calendars = Calendar::orderBy('id', 'asc')
             ->with('track')
             ->where('date_at', $this->dateAt)
             ->where('is_active', true)

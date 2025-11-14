@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Bet\BetController;
 use App\Http\Controllers\Ticket\TicketController;
+use App\Livewire\Admin\Calendar\CalendarCreate;
+use App\Livewire\Admin\Calendar\CalendarCrud;
 use App\Livewire\Admin\Result\ResultCreate;
 
 Route::get('/', function () {
@@ -30,4 +32,6 @@ Route::middleware([
 
     Route::get('/results/create', ResultCreate::class)
         ->name('results.create');
+
+    Route::get('/calendarios', CalendarCreate::class)->name('calendars.index');
 });
