@@ -39,6 +39,14 @@ class CalendarCreate extends Component
         'is_active' => true
     ];
 
+    // edit calendar modal
+    public $showEditModal = false;
+    public $editingCalendar = null;
+    public $editTrackConfig = [];
+    public $editRaceConfig = [];
+    public $editDefaultRaces = 13;
+    public $editDefaultHorses = 16;
+
     protected $rules = [
         'form.track_id' => 'required|exists:tracks,id',
         'form.date_at' => 'required|date',
@@ -130,7 +138,7 @@ class CalendarCreate extends Component
             ->orderBy('date_at', 'desc')
             ->paginate(10);
 
-        $trackIds = [52,4,9,18,22,25,119,26,27,30,32,38,55,59,60,61,68,76,82,83,89,90,91,103,105,116,23,8];
+        $trackIds = [52,4,22,25,61,116,119,26,27,30,32,38,55,9,59,60,68,18,76,82,83,89,90,91,103,105,23,8];
         $tracks = Track::whereIn('id', $trackIds)
             ->orderByRaw('FIELD(id, ' . implode(',', $trackIds) . ')')
             ->get();
@@ -391,7 +399,7 @@ class CalendarCreate extends Component
     } */
 
     // methods for single calendar CRUD operations
-    public function create()
+    /* public function create()
     {
         $this->reset('form', 'editingId');
         $this->form['date_at'] = $this->dateAt;
@@ -451,6 +459,225 @@ class CalendarCreate extends Component
             $this->dispatch('notify', [
                 'type' => 'error',
                 'message' => 'Error al eliminar: ' . $e->getMessage()
+            ]);
+        }
+    } */
+
+    // Método para editar
+    public function edit($id)
+    {
+        $this->editingCalendar = Calendar::with(['racings.racing_horses'])->findOrFail($id);
+        
+        // Inicializar configuración para este track específico
+        $this->initializeEditConfig($this->editingCalendar);
+        
+        $this->showEditModal = true;
+    }
+
+    protected function initializeEditConfig($calendar)
+    {
+        $trackId = $calendar->track_id;
+        
+        // Configuración del track
+        $this->editTrackConfig[$trackId] = [
+            'races' => $calendar->total_races,
+            'selected' => true // Siempre seleccionado porque es el que estamos editando
+        ];
+        
+        // Configuración de las carreras existentes
+        $this->editRaceConfig[$trackId] = [];
+        
+        foreach ($calendar->racings as $racing) {
+            $this->editRaceConfig[$trackId][$racing->race] = [
+                'horses' => $racing->total_horses,
+                'retired_horses' => $racing->racing_horses
+                    ->where('status', 'scratch')
+                    ->pluck('nro')
+                    ->toArray()
+            ];
+        }
+    }
+
+    // Método para actualizar configuración de carreras en edición
+    public function updateEditRaceConfig($trackId, $numRaces)
+    {
+        $this->editRaceConfig[$trackId] = [];
+        
+        for ($raceNumber = 1; $raceNumber <= $numRaces; $raceNumber++) {
+            // Mantener configuración existente o usar defaults
+            $existingConfig = $this->editRaceConfig[$trackId][$raceNumber] ?? [
+                'horses' => $this->editDefaultHorses,
+                'retired_horses' => []
+            ];
+            
+            $this->editRaceConfig[$trackId][$raceNumber] = $existingConfig;
+        }
+    }
+
+    // Método para alternar caballo retirado en edición
+    public function toggleEditRetiredHorse($trackId, $raceNumber, $horseNumber)
+    {
+        if (!isset($this->editRaceConfig[$trackId][$raceNumber]['retired_horses'])) {
+            $this->editRaceConfig[$trackId][$raceNumber]['retired_horses'] = [];
+        }
+
+        $retiredHorses = &$this->editRaceConfig[$trackId][$raceNumber]['retired_horses'];
+        
+        if (in_array($horseNumber, $retiredHorses)) {
+            $retiredHorses = array_filter($retiredHorses, function($num) use ($horseNumber) {
+                return $num != $horseNumber;
+            });
+        } else {
+            $retiredHorses[] = $horseNumber;
+            sort($retiredHorses);
+        }
+    }
+
+    // Método principal para actualizar la jornada
+    public function updateCalendar()
+    {
+        try {
+            DB::transaction(function () {
+                $calendar = $this->editingCalendar;
+                $trackId = $calendar->track_id;
+                
+                // Actualizar el calendario principal
+                $calendar->update([
+                    'total_races' => $this->editTrackConfig[$trackId]['races'],
+                    'is_active' => true,
+                ]);
+                
+                $numRaces = $this->editTrackConfig[$trackId]['races'];
+                $existingRacings = $calendar->racings->keyBy('race');
+                
+                for ($raceNumber = 1; $raceNumber <= $numRaces; $raceNumber++) {
+                    $raceConfig = $this->editRaceConfig[$trackId][$raceNumber] ?? [
+                        'horses' => $this->editDefaultHorses,
+                        'retired_horses' => []
+                    ];
+
+                    $totalHorses = $raceConfig['horses'];
+                    $retiredHorses = $raceConfig['retired_horses'] ?? [];
+                    $activeHorses = $totalHorses - count($retiredHorses);
+
+                    // Verificar si ya existe una carrera para este número
+                    if (isset($existingRacings[$raceNumber])) {
+                        // Actualizar carrera existente
+                        $race = $existingRacings[$raceNumber];
+                        $race->update([
+                            'total_horses' => $totalHorses,
+                            'active_horses' => max(1, $activeHorses),
+                            'retired_horses' => count($retiredHorses),
+                            'start_time' => $calendar->date_at->format('Y-m-d') . ' ' . now()->addMinutes($raceNumber * 10)->format('H:i'),
+                            'distance' => rand(1000, 2000),
+                            'status' => 'open',
+                        ]);
+                    } else {
+                        // Crear nueva carrera si no existe
+                        $race = Racing::create([
+                            'calendar_id' => $calendar->id,
+                            'race' => $raceNumber,
+                            'total_horses' => $totalHorses,
+                            'active_horses' => max(1, $activeHorses),
+                            'retired_horses' => count($retiredHorses),
+                            'start_time' => $calendar->date_at->format('Y-m-d') . ' ' . now()->addMinutes($raceNumber * 10)->format('H:i'),
+                            'distance' => rand(1000, 2000),
+                            'status' => 'open',
+                        ]);
+                    }
+
+                    // Eliminar caballos existentes y crear nuevos
+                    RacingHorse::where('racing_id', $race->id)->delete();
+                    for ($horseNumber = 1; $horseNumber <= $totalHorses; $horseNumber++) {
+                        $status = in_array($horseNumber, $retiredHorses) ? 'scratch' : 'run';
+                        
+                        RacingHorse::create([
+                            'racing_id' => $race->id,
+                            'nro' => $horseNumber,
+                            'status' => $status,
+                        ]);
+                    }
+
+                    // Eliminar apuestas existentes y crear nuevas
+                    RacingBet::where('racing_id', $race->id)->delete();
+                    for ($j = 1; $j <= 3; $j++) {
+                        RacingBet::create([
+                            'racing_id' => $race->id,
+                            'bet_type_id' => $j,
+                        ]);
+                    }
+                }
+                
+                // Eliminar carreras sobrantes si se redujo el número de carreras
+                $racesToDelete = $existingRacings->keys()->filter(function($existingRaceNumber) use ($numRaces) {
+                    return $existingRaceNumber > $numRaces;
+                });
+                
+                foreach ($racesToDelete as $raceNumberToDelete) {
+                    $racingToDelete = $existingRacings[$raceNumberToDelete];
+                    RacingHorse::where('racing_id', $racingToDelete->id)->delete();
+                    RacingBet::where('racing_id', $racingToDelete->id)->delete();
+                    $racingToDelete->delete();
+                }
+            });
+
+            $this->showEditModal = false;
+            $this->reset('editTrackConfig', 'editRaceConfig', 'editingCalendar');
+            
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Jornada actualizada exitosamente!'
+            ]);
+
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Error al actualizar: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function create()
+    {
+        $this->reset('form', 'editingId');
+        $this->form['date_at'] = $this->dateAt;
+        $this->modalTitle = 'Crear Jornada Individual';
+        $this->showModal = true;
+    }
+
+    public function save()
+    {
+        if ($this->editingId) {
+            $this->updateCalendar();
+        } else {
+            $this->createCalendar();
+        }
+    }
+
+    public function createCalendar()
+    {
+        $this->validate([
+            'form.track_id' => 'required|exists:tracks,id',
+            'form.date_at' => 'required|date',
+            'form.total_races' => 'required|integer|min:1|max:20',
+            'form.is_active' => 'boolean'
+        ]);
+
+        try {
+            Calendar::create($this->form);
+
+            $this->showModal = false;
+            $this->reset('form');
+            
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Jornada individual creada exitosamente!'
+            ]);
+
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Error al crear la jornada: ' . $e->getMessage()
             ]);
         }
     }

@@ -33,5 +33,7 @@ Route::middleware([
     Route::get('/results/create', ResultCreate::class)
         ->name('results.create');
 
-    Route::get('/calendarios', CalendarCreate::class)->name('calendars.index');
+    Route::get('/calendarios', CalendarCreate::class)
+        ->middleware(['role:SuperAdmin|Admin'])
+        ->name('calendars.index');
 });

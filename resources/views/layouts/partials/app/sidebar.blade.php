@@ -15,14 +15,15 @@
             'route' => route('ticket.office'),
             'active' => request()->routeIs('ticket.office'),
         ],
-        /* [
-            'can' => 'do-audit',
-            'icon' => 'fa-solid fa-circle-notch',
-            'name' => 'Auditoria',
-            'route' => route('audits.index'),
-            'active' => request()->routeIs('audits.index'),
-        ],
         [
+            //'can' => 'do-audit',
+            'role' => ['SuperAdmin','Admin'],
+            'icon' => 'fa-solid fa-circle-notch',
+            'name' => 'Jornadas',
+            'route' => route('calendars.index'),
+            'active' => request()->routeIs('calendars.index'),
+        ],
+        /*[
             'can' => 'view-contacts',
             'icon' => 'fa-solid fa-users-rays',
             'name' => 'Contactos',
@@ -166,7 +167,7 @@
     <div class="h-full px-3 pb-4 overflow-y-auto bg-primary dark:bg-gray-800">
         <ul class="space-y-2 font-medium">
             @php
-                $myRole = '';//MyRole();
+                $myRole = MyRole();
             @endphp
             @foreach ($links as $link)
                 @php

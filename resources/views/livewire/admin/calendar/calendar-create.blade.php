@@ -167,7 +167,10 @@
         </div>
     </div>
 
-    <!-- Modal de Configuración de Jornadas - SOLO ESTA PARTE -->
+    <!-- Modal de Configuración de Jornadas -->
     @include('livewire.admin.calendar.partials.modal-calendars')
+
+    <!-- Modal de Editar Jornadas -->
+    @include('livewire.admin.calendar.partials.modal-update-calendar')
 
 </div>

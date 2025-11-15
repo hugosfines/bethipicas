@@ -42,16 +42,8 @@
             </div>
 
             <!-- Lista de Hipódromos -->
-            <!-- Lista de Hipódromos -->
             <div class="p-6">
                 <div class="space-y-4">
-                    @php
-                        $trackIds = [52,4,9,18,22,25,119,26,27,30,32,38,55,59,60,61,68,76,82,83,89,90,91,103,105,116,23,8];
-                        $tracks = App\Models\Track::whereIn('id', $trackIds)
-                            ->orderByRaw('FIELD(id, ' . implode(',', $trackIds) . ')')
-                            ->get();
-                    @endphp
-
                     @foreach($tracks as $track)
                     @if(isset($trackConfig[$track->id]))
                     <div class="border border-gray-200 rounded-lg overflow-hidden" x-data="{ isOpen: {{ $trackConfig[$track->id]['selected'] ? 'true' : 'false' }} }">
@@ -291,7 +283,7 @@
                 {{ count(collect($trackConfig)->where('selected', true)) }} hipódromos seleccionados
             </span>
             <div class="flex gap-3">
-                <button wire:click="showConfigModal = false" 
+                <button wire:click="$set('showModal', false)" 
                         class="px-4 py-2 text-gray-600 hover:text-gray-800 transition duration-200">
                     Cancelar
                 </button>
