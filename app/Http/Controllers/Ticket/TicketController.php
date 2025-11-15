@@ -48,4 +48,40 @@ class TicketController extends Controller
         
         return view('tickets.imprimir', compact('ticket', 'betTypeData'));
     }
+
+    public function printWinner($ticketId)
+    {
+        $ticket = Bet::with('betLines','racing')
+                    ->findOrFail($ticketId);
+        
+        $isPaid = false;
+        $isWinner = false;
+        $amountToPay = 0;
+        foreach ($ticket->betLines as $key => $bet) {
+            if ($bet->status == 'paid') {
+                $isPaid = true;
+                break;
+            }
+
+            if ($bet->type == 'win') {
+                $amountToPay += $bet->amount_pay;
+                $isWinner = true;
+            }
+        }
+
+        if ($isPaid) {
+            flash()->warning('Ticket ya pagado.');
+            return;
+        }
+
+        if ($isWinner) {
+            $betTypeId = $ticket->betLines()->first()->bet_type_id;
+            $betTypeData = BetType::find($betTypeId);
+            
+            return view('tickets.print-winner', compact('ticket', 'betTypeData', 'amountToPay'));
+        } else {
+            flash()->warning('Ticket no ganador.');
+            return;
+        }
+    }  
 }

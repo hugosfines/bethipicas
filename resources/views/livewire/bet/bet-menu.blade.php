@@ -64,6 +64,12 @@
                     }, 1000);
                 });
 
+                @this.on('imprimir-cuenta', (event) => {
+                    // Abrir ventana de impresión - GET
+                    const url = `/ticket/ganador/${event.ticketId}`;
+                    const ventana = window.open(url, '_blank', 'width=300,height=400');
+                });
+
                 Livewire.on('desmarcar-calendarios', (data) => {
                     // Desmarcar todos los checkboxes con name="check-calendar"
                     /* document.querySelectorAll('input[name="check-calendar-'+roleId+'"]').forEach(checkbox => {

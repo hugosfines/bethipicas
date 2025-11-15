@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 
+use function Flasher\Prime\flash;
+use function Symfony\Component\Clock\now;
+
 class BetMenu extends Component
 {
     public $loading = false;
@@ -27,6 +30,8 @@ class BetMenu extends Component
     public $defaultPrices = [500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 300000, 400000, 500000];
 
     public $dateAt;
+    public $dateTicket;
+    public $codeTicket = null;
     public $calendars = [];
     public $calendarId = '';
     public $calendarData;
@@ -52,6 +57,7 @@ class BetMenu extends Component
         $this->colorNumbers = $service->colorsNumber;
 
         $this->dateAt = now()->format('Y-m-d');
+        $this->dateTicket = now()->format('Y-m-d');
 
         $this->loadData();
         // $account = MyAccount();
@@ -454,4 +460,54 @@ class BetMenu extends Component
 
         return view('livewire.bet.bet-menu');
     }
+
+    public function searchTicket()
+    {
+        if (!$this->codeTicket) {
+            flash()->warning('Ingrese el código del ticket.');
+            return;
+        }
+
+        $code = $this->codeTicket . now()->format('Ymd');
+        $ticket = Bet::with('betLines','racing')
+                    ->where('code', $code)
+                    ->first();
+
+        if (!$ticket) {
+            flash()->warning('Ticket no encontrado.');
+            return;
+        }
+
+        $isPaid = false;
+        $isWinner = false;
+        $amountToPay = 0;
+        foreach ($ticket->betLines as $key => $bet) {
+            if ($bet->status == 'paid') {
+                $isPaid = true;
+                break;
+            }
+
+            if ($bet->type == 'win') {
+                $amountToPay += $bet->amount_pay;
+                $isWinner = true;
+            }
+        }
+
+        if ($isPaid) {
+            flash()->warning('Ticket ya pagado.');
+            return;
+        }
+
+        if ($isWinner) {
+            $this->dispatch('imprimir-cuenta', ticketId: $ticket->id);
+        } else {
+            flash()->warning('Ticket no ganador.');
+            return;
+        }
+
+        $betTypeId = $ticket->betLines()->first()->bet_type_id;
+        $betTypeData = BetType::find($betTypeId);
+        
+        return view('tickets.print-winner', compact('ticket', 'betTypeData'));
+    } 
 }

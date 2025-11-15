@@ -32,6 +32,9 @@ Route::middleware([
     Route::post('/tickets/imprimir', [TicketController::class, 'imprimir'])
         ->name('tickets.imprimir');
 
+    Route::get('/ticket/ganador/{ticket}', [TicketController::class, 'printWinner'])
+        ->name('ticket.win.imprimir');
+
     Route::get('/results/create', ResultCreate::class)
         ->name('results.create');
 
@@ -42,7 +45,7 @@ Route::middleware([
     Route::get('/administrar-jornadas', ManageCalendars::class)
         ->middleware(['role:SuperAdmin|Admin'])
         ->name('manage.selected');
-        
+
     Route::get('/administrar', ManageMultipleCalendars::class)
         ->middleware(['role:SuperAdmin|Admin'])
         ->name('manage.index');

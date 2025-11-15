@@ -31,13 +31,14 @@
             'route' => route('manage.index'),
             'active' => request()->routeIs('manage.index'),
         ],
-        /*[
-            'icon' => 'fa-solid fa-newspaper',
-            'name' => 'Nuevo Negocio',
-            'route' => route('negotiations.create'),
-            'active' => request()->routeIs('negotiations.*'),
-        ],
         [
+            'role' => ['SuperAdmin','Admin'],
+            'icon' => 'fa-solid fa-newspaper',
+            'name' => 'Resultados',
+            'route' => route('results.create'),
+            'active' => request()->routeIs('results.create'),
+        ],
+        /*[
             'can' => 'import-negotiations',
             'icon' => 'fa-solid fa-file-import',
             'name' => 'Importar',
