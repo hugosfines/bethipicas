@@ -65,8 +65,10 @@ class CalendarCreate extends Component
     {
         $trackIds = [52,4,9,18,22,25,119,26,27,30,32,38,55,59,60,61,68,76,82,83,89,90,91,103,105,116,23,8];
         
+        //$tracks = Track::whereIn('id', $trackIds)
+            //->orderByRaw('FIELD(id, ' . implode(',', $trackIds) . ')')
+            //->get();
         $tracks = Track::whereIn('id', $trackIds)
-            ->orderByRaw('FIELD(id, ' . implode(',', $trackIds) . ')')
             ->get();
 
         foreach ($tracks as $track) {
@@ -139,8 +141,10 @@ class CalendarCreate extends Component
             ->paginate(10);
 
         $trackIds = [52,4,22,25,61,116,119,26,27,30,32,38,55,9,59,60,68,18,76,82,83,89,90,91,103,105,23,8];
+        //$tracks = Track::whereIn('id', $trackIds)
+            //->orderByRaw('FIELD(id, ' . implode(',', $trackIds) . ')')
+            //->get();
         $tracks = Track::whereIn('id', $trackIds)
-            ->orderByRaw('FIELD(id, ' . implode(',', $trackIds) . ')')
             ->get();
 
         return view('livewire.admin.calendar.calendar-create', compact('calendars', 'tracks'));
@@ -207,8 +211,10 @@ class CalendarCreate extends Component
                     return (int)$key;
                 })->toArray();
                 
+                //$tracks = Track::whereIn('id', $selectedTrackIds)
+                    //->orderByRaw('FIELD(id, ' . implode(',', $selectedTrackIds) . ')')
+                    //->get();
                 $tracks = Track::whereIn('id', $selectedTrackIds)
-                    ->orderByRaw('FIELD(id, ' . implode(',', $selectedTrackIds) . ')')
                     ->get();
 
                 foreach($tracks as $track) {
@@ -291,177 +297,6 @@ class CalendarCreate extends Component
             ]);
         }
     }
-
-    /* public function createJornadas()
-    {
-        $this->validate([
-            'dateAt' => 'required|date'
-        ]);
-
-        $selectedTracks = collect($this->trackConfig)->filter(function ($config) {
-            return $config['selected'];
-        });
-
-        if ($selectedTracks->isEmpty()) {
-            $this->dispatch('notify', [
-                'type' => 'error',
-                'message' => 'Selecciona al menos un hipódromo'
-            ]);
-            return;
-        }
-
-        try {
-            DB::transaction(function () use ($selectedTracks) {
-                $trackIds = [52,4,9,18,22,25,119,26,27,30,32,38,55,59,60,61,68,76,82,83,89,90,91,103,105,116,23,8];
-                
-                $tracks = Track::whereIn('id', $trackIds)
-                    ->orderByRaw('FIELD(id, ' . implode(',', $trackIds) . ')')
-                    ->get();
-
-                foreach($tracks as $track) {
-                    // Solo procesar tracks seleccionados
-                    if (!isset($this->trackConfig[$track->id]) || !$this->trackConfig[$track->id]['selected']) {
-                        continue;
-                    }
-
-                    $numRaces = $this->trackConfig[$track->id]['races'];
-
-                    for ($i=1; $i <= 6 ; $i++) { 
-                        $calendar = Calendar::create([
-                            'track_id' => $track->id,
-                            'date_at' => $this->dateAt,
-                            'total_races' => $numRaces,
-                            'is_active' => true,
-                        ]);
-
-                        RaceCalendar::create([
-                            'calendar_id' => $calendar->id,
-                            'race_current' => 1,
-                            'user_id' => Auth::id() ?? 1
-                        ]);
-
-                        for ($raceNumber=1; $raceNumber <= $numRaces ; $raceNumber++) { 
-                            $raceConfig = $this->raceConfig[$track->id][$raceNumber] ?? [
-                                'horses' => $this->defaultHorses,
-                                'retired_horses' => []
-                            ];
-
-                            $totalHorses = $raceConfig['horses'];
-                            $retiredHorses = $raceConfig['retired_horses'] ?? [];
-                            $activeHorses = $totalHorses - count($retiredHorses);
-
-                            $race = Racing::create([
-                                'calendar_id' => $calendar->id,
-                                'race' => $raceNumber,
-                                'total_horses' => $totalHorses,
-                                'active_horses' => max(1, $activeHorses),
-                                'retired_horses' => count($retiredHorses),
-                                'start_time' => $calendar->date_at->format('Y-m-d') . ' ' . now()->addMinutes($raceNumber * 10)->format('H:i'),
-                                'distance' => rand(1000, 2000),
-                                'status' => 'open',
-                            ]);
-
-                            // El observer se encargará de crear los RacingHorse
-                            // Pero también podemos crear los retirados aquí
-                            for ($horseNumber=1; $horseNumber <= $totalHorses ; $horseNumber++) { 
-                                $status = in_array($horseNumber, $retiredHorses) ? 'scratch' : 'run';
-                                
-                                RacingHorse::create([
-                                    'racing_id' => $race->id,
-                                    'nro' => $horseNumber,
-                                    'status' => $status,
-                                ]);
-                            }
-
-                            for ($j=1; $j <= 3 ; $j++) { 
-                                RacingBet::create([
-                                    'racing_id' => $race->id,
-                                    'bet_type_id' => $j,
-                                ]);
-                            }
-                        }
-                    }
-                }
-            });
-
-            $this->showConfigModal = false;
-            $this->dispatch('notify', [
-                'type' => 'success',
-                'message' => 'Jornadas creadas exitosamente!'
-            ]);
-
-        } catch (\Exception $e) {
-            $this->dispatch('notify', [
-                'type' => 'error',
-                'message' => 'Error al crear las jornadas: ' . $e->getMessage()
-            ]);
-        }
-    } */
-
-    // methods for single calendar CRUD operations
-    /* public function create()
-    {
-        $this->reset('form', 'editingId');
-        $this->form['date_at'] = $this->dateAt;
-        $this->modalTitle = 'Crear Calendario';
-        $this->showModal = true;
-    }
-
-    public function edit($id)
-    {
-        $calendar = Calendar::findOrFail($id);
-        $this->form = $calendar->toArray();
-        $this->form['date_at'] = $calendar->date_at->format('Y-m-d');
-        $this->editingId = $id;
-        $this->modalTitle = 'Editar Calendario';
-        $this->showModal = true;
-    }
-
-    public function save()
-    {
-        $this->validate();
-
-        try {
-            if ($this->editingId) {
-                $calendar = Calendar::findOrFail($this->editingId);
-                $calendar->update($this->form);
-                $message = 'Calendario actualizado exitosamente!';
-            } else {
-                Calendar::create($this->form);
-                $message = 'Calendario creado exitosamente!';
-            }
-
-            $this->showModal = false;
-            $this->dispatch('notify', [
-                'type' => 'success',
-                'message' => $message
-            ]);
-
-        } catch (\Exception $e) {
-            $this->dispatch('notify', [
-                'type' => 'error',
-                'message' => 'Error al guardar: ' . $e->getMessage()
-            ]);
-        }
-    }
-
-    public function delete($id)
-    {
-        try {
-            Calendar::findOrFail($id)->delete();
-            
-            $this->dispatch('notify', [
-                'type' => 'success',
-                'message' => 'Calendario eliminado exitosamente!'
-            ]);
-
-        } catch (\Exception $e) {
-            $this->dispatch('notify', [
-                'type' => 'error',
-                'message' => 'Error al eliminar: ' . $e->getMessage()
-            ]);
-        }
-    } */
 
     // Método para editar
     public function edit($id)
