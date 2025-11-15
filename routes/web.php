@@ -7,6 +7,8 @@ use App\Http\Controllers\Ticket\TicketController;
 use App\Livewire\Admin\Calendar\CalendarCreate;
 use App\Livewire\Admin\Calendar\CalendarCrud;
 use App\Livewire\Admin\Result\ResultCreate;
+use App\Livewire\Admin\Manage\ManageCalendars;
+use App\Livewire\Admin\Manage\ManageMultipleCalendars;
 
 Route::get('/', function () {
     return view('pageframe');
@@ -36,4 +38,11 @@ Route::middleware([
     Route::get('/calendarios', CalendarCreate::class)
         ->middleware(['role:SuperAdmin|Admin'])
         ->name('calendars.index');
+
+    //Route::get('/administrar', ManageCalendars::class)
+        //->middleware(['role:SuperAdmin|Admin'])
+        //->name('manage.index');
+    Route::get('/administrar', ManageMultipleCalendars::class)
+        ->middleware(['role:SuperAdmin|Admin'])
+        ->name('manage.index');
 });

@@ -26,6 +26,11 @@ class Calendar extends Model
         return $this->hasOne(RaceCalendar::class);
     }
 
+    public function raceCalendars()
+    {
+        return $this->hasMany(RaceCalendar::class);
+    }
+
     public function racings()
     {
         return $this->hasMany(Racing::class);

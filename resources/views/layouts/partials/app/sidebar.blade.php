@@ -23,14 +23,15 @@
             'route' => route('calendars.index'),
             'active' => request()->routeIs('calendars.index'),
         ],
-        /*[
-            'can' => 'view-contacts',
-            'icon' => 'fa-solid fa-users-rays',
-            'name' => 'Contactos',
-            'route' => route('leads.contacts.index'),
-            'active' => request()->routeIs('leads.contacts.*'),
-        ],
         [
+            //'can' => 'view-contacts',
+            'role' => ['SuperAdmin','Admin'],
+            'icon' => 'fa-solid fa-users-rays',
+            'name' => 'Administrar',
+            'route' => route('manage.index'),
+            'active' => request()->routeIs('manage.index'),
+        ],
+        /*[
             'icon' => 'fa-solid fa-newspaper',
             'name' => 'Nuevo Negocio',
             'route' => route('negotiations.create'),
