@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bet;
 use App\Models\BetType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TicketController extends Controller
 {
@@ -75,10 +76,34 @@ class TicketController extends Controller
         }
 
         if ($isWinner) {
-            $betTypeId = $ticket->betLines()->first()->bet_type_id;
-            $betTypeData = BetType::find($betTypeId);
+            try {
+               DB::beginTransaction();
+
+                // Marcar apuestas ganadoras como pagadas
+                foreach ($ticket->betLines as $key => $bet) {
+                    if ($bet->type == 'win' && $bet->status != 'paid') {
+                        $bet->status = 'paid';
+                        $bet->amount_paid = $bet->amount_pay;
+                        $bet->save();
+                    }
+                }
+
+                // Marcar ticket como pagado si todas las apuestas están pagadas
+                $allPaid = $ticket->betLines()->where('status', '!=', 'paid')->count() == 0;
+                if ($allPaid) {
+                    $ticket->status = 'paid';
+                    $ticket->save();
+                }
+
+                DB::commit();
+
+                $betTypeId = $ticket->betLines()->first()->bet_type_id;
+                $betTypeData = BetType::find($betTypeId);
             
-            return view('tickets.print-winner', compact('ticket', 'betTypeData', 'amountToPay'));
+                return view('tickets.print-winner', compact('ticket', 'betTypeData', 'amountToPay'));
+            } catch (\Throwable $th) {
+                //throw $th;
+            }
         } else {
             flash()->warning('Ticket no ganador.');
             return;
