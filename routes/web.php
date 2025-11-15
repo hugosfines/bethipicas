@@ -39,9 +39,10 @@ Route::middleware([
         ->middleware(['role:SuperAdmin|Admin'])
         ->name('calendars.index');
 
-    //Route::get('/administrar', ManageCalendars::class)
-        //->middleware(['role:SuperAdmin|Admin'])
-        //->name('manage.index');
+    Route::get('/administrar-jornadas', ManageCalendars::class)
+        ->middleware(['role:SuperAdmin|Admin'])
+        ->name('manage.selected');
+        
     Route::get('/administrar', ManageMultipleCalendars::class)
         ->middleware(['role:SuperAdmin|Admin'])
         ->name('manage.index');
