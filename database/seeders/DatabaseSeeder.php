@@ -57,6 +57,7 @@ class DatabaseSeeder extends Seeder
             BetTypeTableSeeder::class,
             CalendarTableSeeder::class,
             PermissionSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }
