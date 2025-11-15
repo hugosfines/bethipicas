@@ -105,8 +105,7 @@ class ProcessWinners extends Command
                     'amount_pay' => 0.00,
                     'amount_paid' => 0.00
                 ]);
-            //DB::commit();
-            //dd('aaa');
+
             $racingResults = $racing->results;
 
             foreach ($bets as $betm) {
@@ -212,11 +211,14 @@ class ProcessWinners extends Command
     {
         // Para ganador, el número debe estar en posición 1 (puede haber empates)
         $isLoser = true;
+        $aditionalDividendo = (500 / 1000);
         foreach ($results as $key => $result) {
             if ($bet->step_1 == $result->number) {
+                $div_1 = ($result->dividendo + $aditionalDividendo) / 2;
+
                 $bet->type = 'win';
                 $bet->status = 'processed';
-                $bet->amount_pay = $bet->amount * $result->dividendo;
+                $bet->amount_pay = $bet->amount * $div_1;
                 $bet->amount_paid = 0;
                 $bet->save();
                 return true;
@@ -239,11 +241,14 @@ class ProcessWinners extends Command
     {
         // Para place, el número debe estar en posición 1 o 2 (puede haber empates)
         $isLoser = true;
+        $aditionalDividendo = 0;
         foreach ($results as $key => $result) {
             if ($bet->step_2 == $result->number) {
+                $div_1 = ($result->dividendo + $aditionalDividendo) / 2;
+
                 $bet->type = 'win';
                 $bet->status = 'processed';
-                $bet->amount_pay = $bet->amount * $result->dividendo;
+                $bet->amount_pay = $bet->amount * $div_1;
                 $bet->amount_paid = 0;
                 $bet->save();
                 return true;
@@ -266,11 +271,14 @@ class ProcessWinners extends Command
     {
         // Para show, el número debe estar en posición 1, 2 o 3 (puede haber empates)
         $isLoser = true;
+        $aditionalDividendo = 0;
         foreach ($results as $key => $result) {
             if ($bet->step_3 == $result->number) {
+                $div_1 = ($result->dividendo + $aditionalDividendo) / 2;
+
                 $bet->type = 'win';
                 $bet->status = 'processed';
-                $bet->amount_pay = $bet->amount * $result->dividendo;
+                $bet->amount_pay = $bet->amount * $div_1;
                 $bet->amount_paid = 0;
                 $bet->save();
                 return true;
